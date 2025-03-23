@@ -1,0 +1,10 @@
+numpy
+pandas
+matplotlib
+ipympl
+watchdog
+pyarrow
+darts
+scikit-learn
+tensorflow
+scipy
