@@ -7,6 +7,8 @@ from feature_adder import add_num_Nan
 from feature_adder import add_num_bytes
 from feature_adder import add_austevoll_frost_temperature_feature
 from feature_adder import temp_sum_since_t0
+from feature_adder import add_voltage_features
+from feature_adder import max_smoothing_preserve_hours
 
 import matplotlib.pyplot as plt  
 plt.style.use('./deeplearning.mplstyle')
@@ -21,7 +23,11 @@ list_features = [
         'Num_Bytes',
         #'Num_Bytes_n',
         'Time_Since_t0', 
-        'Time_Since_t0_n', 
+        'Time_Since_t0_n',
+        'Hours_Since_t0',
+        'Days_Since_t0', 
+        'Weeks_Since_t0',
+        'Months_Since_t0',
         'year', 
         'month_0', 
         'month_1',
@@ -54,10 +60,19 @@ list_features = [
         'sin_hour', 
         'cos_hour',
         'smooth_System_Parameters.Input_Voltage', 
-    'System_Parameters.Input_Voltage']
+    'System_Parameters.Input_Voltage',
+    
+    'Voltage_Lag1',
+    'Voltage_Diff',
+    'Voltage_Change_Rate',
+    'Rolling_Mean_Voltage',
+    'Rolling_Max_Voltage',
+    'Rolling_Std_Voltage',
+    
+    ]
 
 
-def setup_data(df: pd.DataFrame) -> pd.DataFrame:
+'''def setup_data(df: pd.DataFrame) -> pd.DataFrame:
     
     df = add_time_since_t0_feature(df)
     
@@ -65,7 +80,7 @@ def setup_data(df: pd.DataFrame) -> pd.DataFrame:
     
     df = add_austevoll_temperature_feature(df)
     
-    return df
+    return df'''
 
 
 
@@ -154,7 +169,11 @@ def setup_as_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         as_seg_1_e = add_austevoll_frost_temperature_feature(as_seg_1_e)
         as_seg_1_e = add_fourier_feature(as_seg_1_e)
         as_seg_1_e = temp_sum_since_t0(as_seg_1_e)
+        
         as_seg_1_e = smooth_data_4(df=as_seg_1_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        #as_seg_1_e = max_smoothing_preserve_hours(df=as_seg_1_e, column = 'System_Parameters.Input_Voltage')
+        
+        as_seg_1_e = add_voltage_features(as_seg_1_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
         as_seg_1_e = as_seg_1_e[list_features]
     
     if 2 in list_segments:
@@ -163,7 +182,11 @@ def setup_as_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         as_seg_2_e = add_austevoll_frost_temperature_feature(as_seg_2_e)
         as_seg_2_e = temp_sum_since_t0(as_seg_2_e)
         as_seg_2_e = add_fourier_feature(as_seg_2_e)
+        
         as_seg_2_e = smooth_data_4(as_seg_2_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        #as_seg_2_e = max_smoothing_preserve_hours(df=as_seg_2_e, column = 'System_Parameters.Input_Voltage')
+        
+        as_seg_2_e = add_voltage_features(as_seg_2_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
         as_seg_2_e = as_seg_2_e[list_features]
     
     if 3 in list_segments:
@@ -172,7 +195,11 @@ def setup_as_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         as_seg_3_e = add_austevoll_frost_temperature_feature(as_seg_3_e)
         as_seg_3_e = temp_sum_since_t0(as_seg_3_e)
         as_seg_3_e = add_fourier_feature(as_seg_3_e)
+        
         as_seg_3_e = smooth_data_4(as_seg_3_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        #as_seg_3_e = max_smoothing_preserve_hours(df=as_seg_3_e, column = 'System_Parameters.Input_Voltage')
+        
+        as_seg_3_e = add_voltage_features(as_seg_3_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
         as_seg_3_e = as_seg_3_e[list_features]
         
     if 4 in list_segments:
@@ -181,7 +208,11 @@ def setup_as_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         as_seg_4_e = add_austevoll_frost_temperature_feature(as_seg_4_e)
         as_seg_4_e = temp_sum_since_t0(as_seg_4_e)
         as_seg_4_e = add_fourier_feature(as_seg_4_e)
+        
         as_seg_4_e = smooth_data_4(as_seg_4_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        #as_seg_4_e = max_smoothing_preserve_hours(df=as_seg_4_e, column = 'System_Parameters.Input_Voltage')
+        
+        as_seg_4_e = add_voltage_features(as_seg_4_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
         as_seg_4_e = as_seg_4_e[list_features]
         
     if 5 in list_segments:
@@ -190,7 +221,11 @@ def setup_as_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         as_seg_5_e = add_austevoll_frost_temperature_feature(as_seg_5_e)
         as_seg_5_e = temp_sum_since_t0(as_seg_5_e)
         as_seg_5_e = add_fourier_feature(as_seg_5_e)
+        
         as_seg_5_e = smooth_data_4(as_seg_5_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        #as_seg_5_e = max_smoothing_preserve_hours(df=as_seg_5_e, column = 'System_Parameters.Input_Voltage')
+        
+        as_seg_5_e = add_voltage_features(as_seg_5_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
         as_seg_5_e = as_seg_5_e[list_features]
         
     if 6 in list_segments:
@@ -199,7 +234,11 @@ def setup_as_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         as_seg_6_e = add_austevoll_frost_temperature_feature(as_seg_6_e)
         as_seg_6_e = temp_sum_since_t0(as_seg_6_e)
         as_seg_6_e = add_fourier_feature(as_seg_6_e)
+        
         as_seg_6_e = smooth_data_4(as_seg_6_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        #as_seg_6_e = max_smoothing_preserve_hours(df=as_seg_6_e, column = 'System_Parameters.Input_Voltage')
+        
+        as_seg_6_e = add_voltage_features(as_seg_6_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
         as_seg_6_e = as_seg_6_e[list_features]
         
     if 7 in list_segments:
@@ -208,7 +247,11 @@ def setup_as_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         as_seg_7_e = add_austevoll_frost_temperature_feature(as_seg_7_e)
         as_seg_7_e = temp_sum_since_t0(as_seg_7_e)
         as_seg_7_e = add_fourier_feature(as_seg_7_e)
+        
         as_seg_7_e = smooth_data_4(as_seg_7_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        #as_seg_7_e = max_smoothing_preserve_hours(df=as_seg_7_e, column = 'System_Parameters.Input_Voltage')
+        
+        as_seg_7_e = add_voltage_features(as_seg_7_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
         as_seg_7_e = as_seg_7_e[list_features]
         
     if 8 in list_segments:
@@ -217,7 +260,11 @@ def setup_as_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         as_seg_8_e = add_austevoll_frost_temperature_feature(as_seg_8_e)
         as_seg_8_e = temp_sum_since_t0(as_seg_8_e)
         as_seg_8_e = add_fourier_feature(as_seg_8_e)
+        
         as_seg_8_e = smooth_data_4(as_seg_8_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        #as_seg_8_e = max_smoothing_preserve_hours(df=as_seg_8_e, column = 'System_Parameters.Input_Voltage') 
+        
+        as_seg_8_e = add_voltage_features(as_seg_8_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
         as_seg_8_e = as_seg_8_e[list_features]
         
     if 9 in list_segments:
@@ -226,7 +273,11 @@ def setup_as_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         as_seg_9_e = add_austevoll_frost_temperature_feature(as_seg_9_e)
         as_seg_9_e = temp_sum_since_t0(as_seg_9_e)
         as_seg_9_e = add_fourier_feature(as_seg_9_e)
+        
         as_seg_9_e = smooth_data_4(as_seg_9_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        #as_seg_9_e = max_smoothing_preserve_hours(df=as_seg_9_e, column = 'System_Parameters.Input_Voltage')
+        
+        as_seg_9_e = add_voltage_features(as_seg_9_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
         as_seg_9_e = as_seg_9_e[list_features]
         
     if 10 in list_segments:
@@ -235,7 +286,11 @@ def setup_as_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         as_seg_10_e = add_austevoll_frost_temperature_feature(as_seg_10_e)
         as_seg_10_e = temp_sum_since_t0(as_seg_10_e)
         as_seg_10_e = add_fourier_feature(as_seg_10_e)
+        
         as_seg_10_e = smooth_data_4(as_seg_10_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        #as_seg_10_e = max_smoothing_preserve_hours(df=as_seg_10_e, column = 'System_Parameters.Input_Voltage')
+        
+        as_seg_10_e = add_voltage_features(as_seg_10_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
         as_seg_10_e = as_seg_10_e[list_features]
     
     segments = {

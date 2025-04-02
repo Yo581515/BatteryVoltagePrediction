@@ -30,8 +30,33 @@ def add_time_since_t0_feature(df: pd.DataFrame) -> pd.DataFrame:
     scaler1 = Scaler()
     y_n = scaler1.fit_transform(y_ts)
     df_copy['Time_Since_t0_n'] = y_n.values()
+    
+    df_copy['Hours_Since_t0'] = (df_copy.index - t0).total_seconds() / 3600
+    
+    df_copy['Days_Since_t0'] = (df_copy.index - t0).days
+    
+    df_copy['Weeks_Since_t0'] = (df_copy.index - t0).days // 7
+    
+    df_copy['Months_Since_t0'] = (df_copy.index - t0).days // 30
+    
+    
    
     return df_copy
+
+
+def add_voltage_features(df: pd.DataFrame, voltage_col: str = 'smooth_System_Parameters.Input_Voltage', window: int = 12) -> pd.DataFrame:
+    df_copy = df.copy()
+
+    df_copy['Voltage_Lag1'] = df_copy[voltage_col].shift(1)
+    df_copy['Voltage_Diff'] = df_copy[voltage_col] - df_copy['Voltage_Lag1']
+    df_copy['Voltage_Change_Rate'] = df_copy['Voltage_Diff'] / ((df_copy.index.to_series().diff().dt.total_seconds()) / 3600)
+
+    df_copy['Rolling_Mean_Voltage'] = df_copy[voltage_col].rolling(window=window, min_periods=1).mean()
+    df_copy['Rolling_Max_Voltage'] = df_copy[voltage_col].rolling(window=window, min_periods=1).max()
+    df_copy['Rolling_Std_Voltage'] = df_copy[voltage_col].rolling(window=window, min_periods=1).std()
+
+    return df_copy
+
   
 
 
@@ -215,6 +240,27 @@ def smooth_data_4(df, column, sigma) -> pd.DataFrame:
     plt.grid(True)
     plt.legend()
     plt.show()
+    
+    return df_copy
+
+
+
+def max_smoothing_preserve_hours(df, column):
+    df_copy = df.copy()
+    
+    # Make sure 'Time' is datetime and set as index if needed
+    if not isinstance(df_copy.index, pd.DatetimeIndex):
+        df_copy.index = pd.to_datetime(df_copy.index)
+    
+    # Get max per day
+    daily_max = df_copy[column].resample('1d').max()
+
+    # Reindex daily max to hourly timestamps using forward fill
+    hourly_max = daily_max.reindex(df_copy.index.date, method='ffill')
+    hourly_max.index = df_copy.index  # align with original index
+    
+    # Apply smoothed values
+    df_copy['smooth_'+column] = hourly_max
     
     return df_copy
     
