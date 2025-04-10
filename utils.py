@@ -42,7 +42,7 @@ def time_period(df, start=None, end=None):
     return months, days, hours, seconds, milliseconds
   
   
-def plot_dfs(dfs: list, format=".", start=None, end=None):
+def plot_dfs(dfs: list, format=".", start=None, end=None, title=None):
   """
   Visualizes time series data for all columns in the data frames
 
@@ -61,6 +61,8 @@ def plot_dfs(dfs: list, format=".", start=None, end=None):
     for column in data_frame.columns:
       # Plot the time series data for each column
       plt.plot(data_frame[column][start:end], format, label=column)
+      
+      plt.title(title)
      
       # Label the x-axis
       plt.xlabel("Time")

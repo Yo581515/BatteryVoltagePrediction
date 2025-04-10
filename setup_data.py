@@ -22,12 +22,16 @@ list_features = [
         #'Num_Nan_n',
         'Num_Bytes',
         #'Num_Bytes_n',
+        
+        
         'Time_Since_t0', 
         'Time_Since_t0_n',
         'Hours_Since_t0',
         'Days_Since_t0', 
         'Weeks_Since_t0',
         'Months_Since_t0',
+        
+        
         'year', 
         'month_0', 
         'month_1',
@@ -51,6 +55,8 @@ list_features = [
         'Temperature',
         #'Temperature_n',
         'Temperature_sum', 
+        
+        
         'sin_month', 
         'cos_month', 
         'sin_week', 
@@ -59,6 +65,7 @@ list_features = [
         'cos_day', 
         'sin_hour', 
         'cos_hour',
+        
         'smooth_System_Parameters.Input_Voltage', 
     'System_Parameters.Input_Voltage',
     
@@ -370,6 +377,10 @@ def setup_an_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         an_seg_1_e = temp_sum_since_t0(an_seg_1_e)
         an_seg_1_e = add_fourier_feature(an_seg_1_e)
         an_seg_1_e = smooth_data_4(df=an_seg_1_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        
+        an_seg_1_e = add_voltage_features(an_seg_1_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
+ 
+        
         an_seg_1_e = an_seg_1_e[list_features]
         
     if 2 in list_segments:
@@ -379,6 +390,9 @@ def setup_an_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         an_seg_2_e = temp_sum_since_t0(an_seg_2_e)
         an_seg_2_e = add_fourier_feature(an_seg_2_e)
         an_seg_2_e = smooth_data_4(an_seg_2_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        
+        an_seg_2_e = add_voltage_features(an_seg_2_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
+
         an_seg_2_e = an_seg_2_e[list_features]
         
     if 3 in list_segments:
@@ -388,6 +402,10 @@ def setup_an_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         an_seg_3_e = temp_sum_since_t0(an_seg_3_e)
         an_seg_3_e = add_fourier_feature(an_seg_3_e)
         an_seg_3_e = smooth_data_4(an_seg_3_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        
+        an_seg_3_e = add_voltage_features(an_seg_3_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
+
+        
         an_seg_3_e = an_seg_3_e[list_features]
         
     if 4 in list_segments:
@@ -397,6 +415,10 @@ def setup_an_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         an_seg_4_e = temp_sum_since_t0(an_seg_4_e)
         an_seg_4_e = add_fourier_feature(an_seg_4_e)
         an_seg_4_e = smooth_data_4(an_seg_4_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        
+        
+        an_seg_4_e = add_voltage_features(an_seg_4_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
+
         an_seg_4_e = an_seg_4_e[list_features]
         
     if 5 in list_segments:
@@ -406,6 +428,9 @@ def setup_an_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         an_seg_5_e = temp_sum_since_t0(an_seg_5_e)
         an_seg_5_e = add_fourier_feature(an_seg_5_e)
         an_seg_5_e = smooth_data_4(an_seg_5_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        
+        an_seg_5_e = add_voltage_features(an_seg_5_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
+
         an_seg_5_e = an_seg_5_e[list_features]
         
     if 6 in list_segments:
@@ -415,6 +440,9 @@ def setup_an_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         an_seg_6_e = temp_sum_since_t0(an_seg_6_e)
         an_seg_6_e = add_fourier_feature(an_seg_6_e)
         an_seg_6_e = smooth_data_4(an_seg_6_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        
+        an_seg_6_e = add_voltage_features(an_seg_6_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
+
         an_seg_6_e = an_seg_6_e[list_features]
         
     if 7 in list_segments:
@@ -424,6 +452,9 @@ def setup_an_data(df: pd.DataFrame, smooth_sigma: int, list_segments: list[int])
         an_seg_7_e = temp_sum_since_t0(an_seg_7_e)
         an_seg_7_e = add_fourier_feature(an_seg_7_e)
         an_seg_7_e = smooth_data_4(an_seg_7_e, column = 'System_Parameters.Input_Voltage' ,sigma= smooth_sigma)
+        
+        an_seg_7_e = add_voltage_features(an_seg_7_e, voltage_col='smooth_System_Parameters.Input_Voltage', window=12)
+
         an_seg_7_e = an_seg_7_e[list_features]
         
     segments = {
