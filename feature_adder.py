@@ -7,6 +7,8 @@ from darts.timeseries import TimeSeries
 from darts.utils.timeseries_generation import datetime_attribute_timeseries
 from darts.dataprocessing.transformers import Scaler
 
+from scipy.optimize import minimize
+
 
  
  
@@ -44,16 +46,22 @@ def add_time_since_t0_feature(df: pd.DataFrame) -> pd.DataFrame:
     return df_copy
 
 
-def add_voltage_features(df: pd.DataFrame, voltage_col: str = 'smooth_System_Parameters.Input_Voltage', window: int = 12) -> pd.DataFrame:
+def add_voltage_features(df: pd.DataFrame, voltage_col: str = 'Battery_Level_Fitted', window: int = 12, shit_window: int = 1) -> pd.DataFrame:
     df_copy = df.copy()
 
     df_copy['Voltage_Lag1'] = df_copy[voltage_col].shift(1)
+    
+   
+    df_copy['Voltage_Lead1'] = df_copy[voltage_col].shift(-1)
+    
     df_copy['Voltage_Diff'] = df_copy[voltage_col] - df_copy['Voltage_Lag1']
+    
     df_copy['Voltage_Change_Rate'] = df_copy['Voltage_Diff'] / ((df_copy.index.to_series().diff().dt.total_seconds()) / 3600)
 
     df_copy['Rolling_Mean_Voltage'] = df_copy[voltage_col].rolling(window=window, min_periods=1).mean()
     df_copy['Rolling_Max_Voltage'] = df_copy[voltage_col].rolling(window=window, min_periods=1).max()
     df_copy['Rolling_Std_Voltage'] = df_copy[voltage_col].rolling(window=window, min_periods=1).std()
+    
 
     return df_copy
 
@@ -220,7 +228,7 @@ def temp_sum_since_t0(df: pd.DataFrame)->pd.DataFrame:
 
 
 
-# 2. Gaussian Smoothing
+'''# 2. Gaussian Smoothing
 from scipy.ndimage import gaussian_filter1d
 
 def smooth_data_4(df, column, sigma) -> pd.DataFrame:
@@ -241,28 +249,56 @@ def smooth_data_4(df, column, sigma) -> pd.DataFrame:
     plt.legend()
     plt.show()
     
-    return df_copy
+    return df_copy'''
 
 
 
-def max_smoothing_preserve_hours(df, column):
-    df_copy = df.copy()
+def smooth_df_voltage_fun_df(df)->pd.DataFrame:
     
-    # Make sure 'Time' is datetime and set as index if needed
-    if not isinstance(df_copy.index, pd.DatetimeIndex):
-        df_copy.index = pd.to_datetime(df_copy.index)
+    copy_df = df.copy()
     
-    # Get max per day
-    daily_max = df_copy[column].resample('1d').max()
+    def battery_model(x, a, b, d, s):
+        return (1 - (x / d)**b) * a - s * x
 
-    # Reindex daily max to hourly timestamps using forward fill
-    hourly_max = daily_max.reindex(df_copy.index.date, method='ffill')
-    hourly_max.index = df_copy.index  # align with original index
+    # Step 2: Derivative of battery model
+    def battery_model_derivative(x, a, b, d, s):
+        return -a * b * (x / d)**(b - 1) / d - s
+
+    # Step 3: Loss function (MSE)
+    def loss(params, x, y_actual):
+        a, b, d, s = params
+        if d <= 0 or b <= 0 or a <= 0 or s < 0:
+            return np.inf  # Reject bad values
+        y_pred = battery_model(x, a, b, d, s)
+        return np.mean((y_actual - y_pred) ** 2)
     
-    # Apply smoothed values
-    df_copy['smooth_'+column] = hourly_max
     
-    return df_copy
+    numoy_array = copy_df['System_Parameters.Input_Voltage'].to_numpy()
+    x_data = np.arange(len(numoy_array))
+    y_data = numoy_array
+    
+    # Initial guess
+    initial_guess = [10, 2.5, len(x_data), 0.0005]
+    
+    # Optimization
+    result = minimize(loss, initial_guess, args=(x_data, y_data),
+                      bounds=[(1, 20), (0.5, 60), (len(x_data)/2, len(x_data)*2), (0, 0.001)],
+                      method='L-BFGS-B')
+    
+    if result.success:
+        a_opt, b_opt, d_opt, s_opt = result.x
+        print(f"✅ Fitted params: a={a_opt:.4f}, b={b_opt:.4f}, d={d_opt:.2f}, s={s_opt:.6f}")
+
+        # Evaluate model
+        y_model = battery_model(x_data, a_opt, b_opt, d_opt, s_opt)
+        dy_dx = battery_model_derivative(x_data, a_opt, b_opt, d_opt, s_opt)
+        
+        copy_df['Battery_Level_Fitted'] = y_model
+        copy_df['Battery_Level_Derivative'] = dy_dx
+    else:
+        print(f"❌ Optimization failed for segment: {result.message}")
+    return copy_df
+    
     
 
 
