@@ -49,10 +49,10 @@ def add_time_since_t0_feature(df: pd.DataFrame) -> pd.DataFrame:
 def add_voltage_features(df: pd.DataFrame, voltage_col: str = 'Battery_Level_Fitted', window: int = 12, shit_window: int = 1) -> pd.DataFrame:
     df_copy = df.copy()
 
-    df_copy['Voltage_Lag1'] = df_copy[voltage_col].shift(1)
+    df_copy['Voltage_Lag1'] = df_copy[voltage_col].shift(shit_window)
     
    
-    df_copy['Voltage_Lead1'] = df_copy[voltage_col].shift(-1)
+    df_copy['Voltage_Lead1'] = df_copy[voltage_col].shift(-shit_window)
     
     df_copy['Voltage_Diff'] = df_copy[voltage_col] - df_copy['Voltage_Lag1']
     
@@ -282,7 +282,7 @@ def smooth_df_voltage_fun_df(df)->pd.DataFrame:
     
     # Optimization
     result = minimize(loss, initial_guess, args=(x_data, y_data),
-                      bounds=[(1, 20), (0.5, 60), (len(x_data)/2, len(x_data)*2), (0, 0.001)],
+                      bounds=[(1, 20), (0.5, 100), (len(x_data)/2, len(x_data)*2), (0, 0.001)],
                       method='L-BFGS-B')
     
     if result.success:
